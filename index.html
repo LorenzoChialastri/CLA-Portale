@@ -284,6 +284,47 @@
   @media (max-width: 400px) {
     .grid-secondary { grid-template-columns: 1fr; }
   }
+
+  /* MODULO PERMESSI / FERIE */
+  #modulo-ov{display:none;position:fixed;inset:0;z-index:1000;background:rgba(15,30,48,.75);overflow-y:auto;padding:20px 12px}
+  #modulo-ov.on{display:block}
+  .mod-wrap{max-width:780px;margin:0 auto}
+  .mod-bar{display:flex;gap:10px;justify-content:flex-end;margin-bottom:12px;flex-wrap:wrap}
+  .mod-btn{border:0;border-radius:10px;padding:11px 18px;font:600 14px 'Inter',sans-serif;cursor:pointer;background:#fff;color:var(--navy)}
+  .mod-btn.main{background:var(--blue);color:#fff}
+  .mod-btn:disabled{opacity:.4;cursor:not-allowed}
+  .foglio{background:#fff;border-radius:6px;padding:34px 40px;color:#1C1C1C;font-family:'Inter',sans-serif}
+  .lh{display:flex;align-items:center;gap:18px;padding-bottom:12px;border-bottom:3px solid var(--blue)}
+  .lh img{height:54px;object-fit:contain}
+  .lh .ind{font-size:11px;color:#666;line-height:1.55}
+  .lh .ind b{color:#1C1C1C;font-size:13px}
+  .foglio h1{font:700 20px 'Inter',sans-serif;text-align:center;margin:26px 0 4px;letter-spacing:.3px}
+  .foglio .sub{text-align:center;font-size:12px;color:#666;margin-bottom:20px}
+  .regola{border:1.5px solid var(--gold);background:#FFFBEB;border-radius:8px;padding:11px 14px;font-size:12.5px;line-height:1.55;margin-bottom:20px}
+  .regola b{color:#8A6410}
+  .riga{display:flex;gap:18px;margin-bottom:16px;flex-wrap:wrap}
+  .campo{flex:1;min-width:140px}
+  .campo label{display:block;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:#666;margin-bottom:3px}
+  .campo input[type=text],.campo input[type=date],.campo input[type=time],.campo input[type=number],.campo textarea{width:100%;border:0;border-bottom:1.5px solid #9AA8B8;padding:5px 2px;font:14px 'Inter',sans-serif;background:transparent;color:#1C1C1C;outline:0;border-radius:0}
+  .campo input:focus,.campo textarea:focus{border-bottom-color:var(--blue)}
+  .campo textarea{resize:vertical;min-height:54px}
+  .tipo{display:flex;gap:22px;font-size:14px;padding-top:4px}
+  .tipo label{text-transform:none;letter-spacing:0;font-size:14px;color:#1C1C1C;font-weight:500;display:flex;gap:6px;align-items:center}
+  #mod-stato{border-radius:8px;padding:10px 14px;font-size:13px;font-weight:600;margin:6px 0 4px}
+  #mod-stato.ok{background:#ECFDF5;color:#065F46;border:1px solid #6EE7B7}
+  #mod-stato.ko{background:#FEF2F2;color:#991B1B;border:1px solid #FCA5A5}
+  #mod-stato.nd{background:#EEF2F7;color:#3D5166;border:1px solid #C8D4E0}
+  .firme{display:flex;gap:40px;margin-top:38px}
+  .firme div{flex:1;border-top:1.2px solid #1C1C1C;padding-top:5px;font-size:11px;color:#555}
+  .nota-fine{font-size:10.5px;color:#777;margin-top:26px;border-top:1px solid #DDD;padding-top:8px;text-align:center}
+  @media (max-width:600px){.foglio{padding:22px 18px}.lh{flex-wrap:wrap}}
+  @media print{
+    body>*:not(#modulo-ov){display:none!important}
+    #modulo-ov{position:static;background:#fff;padding:0;display:block!important}
+    .mod-bar,#mod-stato{display:none!important}
+    .foglio{border-radius:0;padding:0}
+    @page{size:A4;margin:16mm}
+  }
 </style>
 </head>
 <body>
@@ -315,7 +356,7 @@
   <div class="section-label">Operativo tecnici</div>
   <div class="grid-primary">
 
-    <a href="https://lorenzochialastri.github.io/Rapportino-Cla/" target="_blank" class="app-card c-blue">
+    <a href="https://lorenzochialastri.github.io/Rapportino-Cla/RAPPORTINO%20CLA.html" target="_blank" class="app-card c-blue">
       <div class="card-icon">📝</div>
       <div class="card-body">
         <div class="card-title">Rapportino di Lavoro</div>
@@ -387,6 +428,15 @@
 
     
 
+    <a href="#" onclick="apriModulo();return false;" class="app-card small c-green">
+      <div class="card-icon">🗓️</div>
+      <div class="card-body">
+        <div class="card-title">Permessi e ferie</div>
+        <div class="card-desc">Modulo di richiesta. Preavviso minimo 3 giorni, invio via mail.</div>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+
     <a href="tel:+393404102949" class="app-card small c-red">
       <div class="card-icon">📞</div>
       <div class="card-body">
@@ -421,6 +471,115 @@
 <footer class="site-footer">
   <strong>C.L.A. Compressori S.r.l.</strong> &nbsp;·&nbsp; Via del Poggio 2, 04011 Aprilia (LT) &nbsp;·&nbsp; P.IVA 02954480592 &nbsp;·&nbsp; Portale uso interno
 </footer>
+
+
+<!-- MODULO RICHIESTA PERMESSI / FERIE -->
+<div id="modulo-ov">
+ <div class="mod-wrap">
+  <div class="mod-bar">
+    <button class="mod-btn" onclick="chiudiModulo()">✕ Chiudi</button>
+    <button class="mod-btn" id="btn-stampa" onclick="window.print()">🖨️ Stampa / PDF</button>
+    <button class="mod-btn main" id="btn-mail" onclick="inviaMail()">✉️ Invia via mail</button>
+  </div>
+  <div class="foglio">
+    <div class="lh">
+      <img src="logo-cla.png" alt="CLA Compressori">
+      <div class="ind"><b>C.L.A. Compressori S.r.l.</b><br>Via del Poggio 2 – 04011 Aprilia (LT) · P.IVA 02954480592<br>Tel. 06 86925851 · info@clacompressori.it</div>
+    </div>
+    <h1>RICHIESTA DI PERMESSO / FERIE</h1>
+    <div class="sub">Modulo interno · arriva in automatico a Lorenzo e Francesca</div>
+    <div class="regola"><b>Regola:</b> la richiesta va inviata <b>almeno 3 giorni prima</b> della data di inizio dell'assenza, via <b>mail a Lorenzo e a Francesca</b>. Una richiesta con preavviso inferiore <b>non è valida</b>.</div>
+
+    <div class="riga">
+      <div class="campo" style="flex:2"><label>Cognome e nome</label><input type="text" id="m-nome"></div>
+      <div class="campo"><label>Data richiesta</label><input type="text" id="m-oggi" readonly></div>
+    </div>
+    <div class="riga">
+      <div class="campo"><label>Tipo di richiesta</label>
+        <div class="tipo">
+          <label><input type="radio" name="m-tipo" value="Permesso" checked onchange="verifica()"> Ore di permesso</label>
+          <label><input type="radio" name="m-tipo" value="Ferie" onchange="verifica()"> Ore di ferie</label>
+        </div>
+      </div>
+    </div>
+    <div class="riga">
+      <div class="campo"><label>Dal giorno</label><input type="date" id="m-dal" oninput="verifica()"></div>
+      <div class="campo"><label>Al giorno</label><input type="date" id="m-al" oninput="verifica()"></div>
+      <div class="campo"><label>Totale ore richieste</label><input type="number" id="m-ore" min="1" step="0.5" oninput="verifica()"></div>
+    </div>
+    <div class="riga">
+      <div class="campo"><label>Dalle ore (se permesso)</label><input type="time" id="m-da"></div>
+      <div class="campo"><label>Alle ore (se permesso)</label><input type="time" id="m-a"></div>
+    </div>
+    <div class="riga">
+      <div class="campo"><label>Note (facoltativo)</label><textarea id="m-note"></textarea></div>
+    </div>
+    <div id="mod-stato" class="nd">Compila la data di inizio.</div>
+    <div class="firme"><div>Firma del dipendente</div><div>Visto direzione</div></div>
+    <div class="nota-fine">C.L.A. Compressori S.r.l. · Richiesta valida solo se inviata via mail con almeno 3 giorni di preavviso</div>
+  </div>
+ </div>
+</div>
+
+<script>
+
+function pad(n){return n<10?'0'+n:''+n}
+function isoOggi(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+function itData(iso){if(!iso)return '';var p=iso.split('-');return p[2]+'/'+p[1]+'/'+p[0]}
+function giorniPreavviso(){
+  var dal=document.getElementById('m-dal').value; if(!dal) return null;
+  var a=new Date(isoOggi()+'T00:00:00'), b=new Date(dal+'T00:00:00');
+  return Math.round((b-a)/86400000);
+}
+function verifica(){
+  var st=document.getElementById('mod-stato'), g=giorniPreavviso();
+  var al=document.getElementById('m-al'), dal=document.getElementById('m-dal');
+  if(dal.value && (!al.value || al.value<dal.value)) al.value=dal.value;
+  var ok=false;
+  if(g===null){st.className='nd';st.textContent='Compila la data di inizio.';}
+  else if(g<3){st.className='ko';st.textContent='RICHIESTA NON VALIDA: preavviso di '+(g<0?'0':g)+' giorni, servono almeno 3 giorni. Scegli una data da '+itData(dataMin())+' in poi.';}
+  else {st.className='ok';st.textContent='Preavviso corretto ('+g+' giorni). Compila e premi Invia.';ok=true;}
+  document.getElementById('btn-mail').disabled=!ok;
+  document.getElementById('btn-stampa').disabled=!ok;
+  return ok;
+}
+function dataMin(){var d=new Date();d.setDate(d.getDate()+3);return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+function apriModulo(){
+  document.getElementById('m-oggi').value=itData(isoOggi());
+  document.getElementById('m-dal').min=dataMin();
+  document.getElementById('m-al').min=dataMin();
+  document.getElementById('modulo-ov').classList.add('on');
+  document.getElementById('modulo-ov').scrollTop=0;
+  verifica();
+}
+function chiudiModulo(){document.getElementById('modulo-ov').classList.remove('on')}
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbygjD7uMES5Kq1MDeqT1IoRZLN4cAyGotC5F_vV1ezibeE-wpYpOD9j-0oBjKzXMjoV/exec'; // >>> INCOLLARE QUI L'URL DELLO SCRIPT PERMESSI (termina con /exec) <<<
+
+function messaggio(cls,t){var st=document.getElementById('mod-stato');st.className=cls;st.textContent=t;}
+function inviaMail(){
+  if(!verifica()) return;
+  var nome=document.getElementById('m-nome').value.trim();
+  if(!nome){document.getElementById('m-nome').focus();messaggio('ko','Inserisci cognome e nome.');return;}
+  if(!document.getElementById('m-ore').value){document.getElementById('m-ore').focus();messaggio('ko','Inserisci il totale delle ore richieste.');return;}
+  var tipo=document.querySelector('input[name=m-tipo]:checked').value;
+  var q={action:'richiesta',nome:nome,tipo:tipo,
+    dal:document.getElementById('m-dal').value,al:document.getElementById('m-al').value,
+    ore:document.getElementById('m-ore').value,da:document.getElementById('m-da').value,a:document.getElementById('m-a').value,
+    note:document.getElementById('m-note').value.trim()};
+  if(!SCRIPT_URL){messaggio('ko','Invio automatico non ancora attivo: manca il collegamento allo script.');return;}
+  var btn=document.getElementById('btn-mail');btn.disabled=true;messaggio('nd','Invio in corso...');
+  var cbn='cbPerm'+Date.now(),fatto=false,sc=document.createElement('script');
+  window[cbn]=function(r){fatto=true;
+    if(r&&r.status==='ok'){messaggio('ok','Richiesta inviata a Lorenzo e Francesca. Aspetta la loro conferma.');}
+    else{messaggio('ko','Non inviata: '+((r&&r.msg)||'errore')+'.');btn.disabled=false;}
+    sc.remove();};
+  sc.onerror=function(){if(!fatto){messaggio('ko','Invio non riuscito. Controlla la connessione e riprova.');btn.disabled=false;}};
+  var qs=Object.keys(q).map(function(k){return k+'='+encodeURIComponent(q[k])}).join('&');
+  sc.src=SCRIPT_URL+(SCRIPT_URL.indexOf('?')<0?'?':'&')+qs+'&callback='+cbn;
+  document.body.appendChild(sc);
+  setTimeout(function(){if(!fatto){messaggio('ko','Nessuna risposta dallo script. Riprova.');btn.disabled=false;}},20000);
+}
+</script>
 
 <script>
 function aggiorna() {
